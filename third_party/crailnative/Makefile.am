@@ -1,1 +1,1 @@
-SUBDIRS = ioutils narpc
+SUBDIRS = ioutils narpc crail

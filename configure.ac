@@ -90,6 +90,7 @@ AC_CONFIG_FILES([Makefile
                  third_party/crailnative/Makefile
                  third_party/crailnative/ioutils/Makefile
                  third_party/crailnative/narpc/Makefile
+                 third_party/crailnative/crail/Makefile
                  examples/Makefile
                  examples/fibonacci/Makefile
                  examples/gtest/Makefile
