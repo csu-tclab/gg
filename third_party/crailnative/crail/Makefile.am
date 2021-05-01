@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I$(srcdir)/. -I$(builddir)/.. -I$(srcdir)/.. -I$(srcdir)/third_party/crailnative/. $(CXX14_FLAGS) \
+AM_CPPFLAGS = -I$(srcdir)/. -I$(builddir)/.. -I$(srcdir)/.. -I$(top_srcdir)/third_party/crailnative/. $(CXX14_FLAGS) \
               $(PROTOBUF_CFLAGS) $(SSL_CFLAGS) $(SSL_CFLAGS) $(CRYPTO_CFLAGS)
 
 AM_CXXFLAGS = $(PICKY_CXXFLAGS) $(EXTRA_CXXFLAGS)
