@@ -15,7 +15,7 @@ AC_PROG_RANLIB
 
 # Add picky CXXFLAGS
 CXX14_FLAGS="-std=c++14 -pthread"
-PICKY_CXXFLAGS="-pedantic -Wall -Wextra -Weffc++ -Werror"
+PICKY_CXXFLAGS="-pedantic -Wall -Wextra -Weffc++"
 AC_SUBST([CXX14_FLAGS])
 AC_SUBST([PICKY_CXXFLAGS])
 AC_LANG_PUSH(C++)
@@ -86,6 +86,10 @@ AC_CONFIG_FILES([Makefile
                  src/execution/Makefile
                  src/frontend/Makefile
                  src/remote/Makefile
+                 third_party/Makefile
+                 third_party/crailnative/Makefile
+                 third_party/crailnative/ioutils/Makefile
+                 third_party/crailnative/narpc/Makefile
                  examples/Makefile
                  examples/fibonacci/Makefile
                  examples/gtest/Makefile
