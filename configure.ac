@@ -73,6 +73,11 @@ AC_SUBST([ARCH])
 
 # Checks for library functions.
 AC_CONFIG_FILES([Makefile
+                 third_party/Makefile
+                 third_party/crailnative/Makefile
+                 third_party/crailnative/ioutils/Makefile
+                 third_party/crailnative/narpc/Makefile
+                 third_party/crailnative/crail/Makefile
                  src/Makefile
                  src/util/Makefile
                  src/tui/Makefile
@@ -86,11 +91,6 @@ AC_CONFIG_FILES([Makefile
                  src/execution/Makefile
                  src/frontend/Makefile
                  src/remote/Makefile
-                 third_party/Makefile
-                 third_party/crailnative/Makefile
-                 third_party/crailnative/ioutils/Makefile
-                 third_party/crailnative/narpc/Makefile
-                 third_party/crailnative/crail/Makefile
                  examples/Makefile
                  examples/fibonacci/Makefile
                  examples/gtest/Makefile
