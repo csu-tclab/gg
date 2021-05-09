@@ -63,10 +63,8 @@ unique_ptr<StorageBackend> StorageBackend::create_backend( const string & uri )
   }
   else if ( endpoint.protocol == "crail" ) {
     CrailClientConfig config;
-    config.ip = endpoint.host;
+    config.namenode_address = endpoint.host;
     config.port = endpoint.port.get_or( config.port );
-    config.username = endpoint.username;
-    config.password = endpoint.password;
 
     backend = make_unique<CrailStorageBackend>( config );
   }
