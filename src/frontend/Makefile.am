@@ -13,7 +13,9 @@ GG_LDADD = ../execution/libggexecution.a \
            ../net/libggnet.a \
            ../tui/libggtui.a \
            ../util/libggutil.a \
-           ../../third_party/crailnative/crail/libcrail.a
+           ../../third_party/crailnative/crail/libcrail.a \
+           ../../third_party/crailnative/ioutils/libioutils.a \
+           ../../third_party/crailnative/narpc/libnarpc.a
 
 BASE_LDADD = $(GG_LDADD) $(PROTOBUF_LIBS) $(HIREDIS_LIBS)
 

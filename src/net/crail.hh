@@ -9,6 +9,9 @@
 
 #include "net/requests.hh"
 
+#include "third_party/crailnative/crail/client/crail_file.h"
+#include "third_party/crailnative/crail/client/crail_store.h"
+
 struct CrailClientConfig
 {
   std::string namenode_address { "0.0.0.0" };
@@ -20,11 +23,11 @@ struct CrailClientConfig
 
 class CrailClient
 {
-private:
+public:
   CrailClientConfig config_;
 
 public:
-  CrailClient( const CrailClientConfig & config ) : config_( config ) {}
+  CrailClient( const CrailClientConfig & config ) : config_(config) {} ;
 
   void upload_files( const std::vector<storage::PutRequest> & upload_requests,
                      const std::function<void( const storage::PutRequest & )> & success_callback
