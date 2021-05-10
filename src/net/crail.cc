@@ -30,9 +30,9 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
           std::shared_ptr<CrailStore> crailStore;
           crailStore.reset(new CrailStore(config_.namenode_address, config_.port));
 
-          std::cout << "[INFO] thread index[" << thread_index << "]" << "begin connect to crail" << std::endl;
+          std::cout << "[INFO] [upload_files] thread index[" << thread_index << "]" << "begin connect to crail" << std::endl;
           crailStore->Initialize();
-          std::cout << "[INFO] thread index[" << thread_index << "]" << "connect to crail server end" << std::endl;
+          std::cout << "[INFO] [upload_files] thread index[" << thread_index << "]" << "connect to crail server end" << std::endl;
           // we can't check the connect result
 
           for ( size_t first_file_idx = index;
@@ -52,18 +52,15 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
               while ( not file.eof() ) { contents.append( file.read() ); }
               file.close();
 
-              //TODO: Call Crailnative library to upload file.
-              //{
-
-              //}
+              // create file on crail
               auto crailFile = crailStore->Create<CrailFile>(const_cast<std::string&>(object_key), 0, 0, true).get();
               if ( !crailFile.valid() ) {
                 throw runtime_error( "failed to create crailFile" );
               }
 
+              // write file to crail stream
               unique_ptr<CrailOutputstream> outputstream = crailFile.outputstream();
               std::shared_ptr<ByteBuffer> buf = make_shared<ByteBuffer>(contents.length());
-
               buf->PutBytes(contents.c_str(), contents.length());
               buf->Flip();
               while (buf->remaining() > 0) {
@@ -73,21 +70,8 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
               }
               outputstream->Close().get();
 
+              success_callback( upload_requests[ expected_responses ] );
               expected_responses++;
-
-            }
-
-            size_t response_count = 0;
-            //TODO: Deal with responses from Crail
-            while ( response_count != expected_responses ) {
-              /* drain responses */
-
-              // TODO: Get Response from Crail and check it status.
-
-              const size_t response_index = first_file_idx + response_count * thread_count;
-              success_callback( upload_requests[ response_index ] );
-
-              response_count++;
             }
           }
         }, thread_index
@@ -113,10 +97,14 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
       threads.emplace_back(
         [&] ( const size_t index )
         {
-          //TODO: Try to connect Crail
-          //{
+          // try to connect to Crail server
+          std::shared_ptr<CrailStore> crailStore;
+          crailStore.reset(new CrailStore(config_.namenode_address, config_.port));
 
-          //}
+          std::cout << "[INFO] [download_files] thread index[" << thread_index << "]" << "begin connect to crail" << std::endl;
+          crailStore->Initialize();
+          std::cout << "[INFO] [download_files] thread index[" << thread_index << "]" << "connect to crail server end" << std::endl;
+          // we can't check the connect result
 
           for ( size_t first_file_idx = index;
                 first_file_idx < download_requests.size();
