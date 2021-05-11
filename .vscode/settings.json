@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "*.rmd": "markdown",
-        "functional": "cpp",
-        "string": "cpp",
-        "thread": "cpp"
-    }
-}
