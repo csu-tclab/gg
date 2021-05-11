@@ -105,11 +105,12 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
           crailStore->Initialize();
           std::cout << "[INFO] [download_files] thread index[" << thread_index << "]" << "connect to crail server end" << std::endl;
           // we can't check the connect result
-
+          
           for ( size_t first_file_idx = index;
                 first_file_idx < download_requests.size();
                 first_file_idx += thread_count * batch_size ) {
 
+            string str_data="";
             size_t expected_responses = 0;
 
             for ( size_t file_id = first_file_idx;
@@ -117,13 +118,26 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
                   file_id += thread_count ) {
               const string & object_key = download_requests.at( file_id ).object_key;
 
-              //TODO: Call Crailnative library to download file.
-              //{
+              // get file on crail
+              auto crailFile = crailStore->Lookup<CrailFile>(const_cast<std::string&>(object_key)).get();
+              if ( !crailFile.valid() ) {
+                throw runtime_error( "faild to get crailFile" );
+              }
 
-              //}
+              //read data to str_data
+              unique_ptr<CrailInputstream> inputstream = crailFile.inputstream();
+              shared_ptr<ByteBuffer> buf = make_shared<ByteBuffer>(kBufferSize);
+              while (buf->remaining()) {
+                if (inputstream->Read(buf).get() < 0) {
+                  return -1;
+                }
+              }
+              buf->Clear();
+              inputstream->Close().get();
+
+              str_data.append(reinterpret_cast<const char*>(buf->get_bytes()));
 
               expected_responses++;
-
             }
 
             size_t response_count = 0;
@@ -137,9 +151,9 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
               const string & filename = download_requests.at( response_index ).filename.string();
               //TODO: Write file to filesystem.
               
-              //roost::atomic_create( str_data, filename,
-              //                      download_requests[ response_index ].mode.initialized(),
-              //                      download_requests[ response_index ].mode.get_or( 0 ) );
+              roost::atomic_create( str_data, filename,
+                                   download_requests[ response_index ].mode.initialized(),
+                                   download_requests[ response_index ].mode.get_or( 0 ) );
 
               success_callback( download_requests[ response_index ] );
 
