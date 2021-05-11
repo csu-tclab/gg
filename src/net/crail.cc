@@ -15,7 +15,6 @@
 
 using namespace std;
 
-// TODO: finish this upload files interface
 void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_requests,
                      const std::function<void( const storage::PutRequest & )> & success_callback) {
   const size_t thread_count = config_.max_threads;
@@ -85,7 +84,6 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
 
 }
 
-// TODO: finish this download files interface
 void CrailClient::download_files(const std::vector<storage::GetRequest> & download_requests,
                        const std::function<void( const storage::GetRequest & )> & success_callback) {
   const size_t thread_count = config_.max_threads;
@@ -137,27 +135,17 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
 
               str_data.append(reinterpret_cast<const char*>(buf->get_bytes()));
 
-              expected_responses++;
-            }
-
-            size_t response_count = 0;
-            //TODO: Deal with responses from Crail
-            while ( response_count != expected_responses ) {
-              /* drain responses */
-
-              //TODO: Get Response from Crail and check it status.
-
-              const size_t response_index = first_file_idx + response_count * thread_count;
+              // process create file from string
+              const size_t response_index = first_file_idx + expected_responses * thread_count;
               const string & filename = download_requests.at( response_index ).filename.string();
-              //TODO: Write file to filesystem.
-              
+
               roost::atomic_create( str_data, filename,
                                    download_requests[ response_index ].mode.initialized(),
                                    download_requests[ response_index ].mode.get_or( 0 ) );
 
               success_callback( download_requests[ response_index ] );
 
-              response_count++;
+              expected_responses++;
             }
           }
         }, thread_index
