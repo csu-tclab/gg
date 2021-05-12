@@ -69,7 +69,7 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
               }
               outputstream->Close().get();
 
-              success_callback( upload_requests[ expected_responses ] );
+              success_callback( upload_requests[ file_id ] );
               expected_responses++;
             }
           }
@@ -136,14 +136,13 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
               str_data.append(reinterpret_cast<const char*>(buf->get_bytes()));
 
               // process create file from string
-              const size_t response_index = first_file_idx + expected_responses * thread_count;
-              const string & filename = download_requests.at( response_index ).filename.string();
+              const string & filename = download_requests.at( file_id ).filename.string();
 
               roost::atomic_create( str_data, filename,
-                                   download_requests[ response_index ].mode.initialized(),
-                                   download_requests[ response_index ].mode.get_or( 0 ) );
+                                   download_requests[ file_id ].mode.initialized(),
+                                   download_requests[ file_id ].mode.get_or( 0 ) );
 
-              success_callback( download_requests[ response_index ] );
+              success_callback( download_requests[ file_id ] );
 
               expected_responses++;
             }
