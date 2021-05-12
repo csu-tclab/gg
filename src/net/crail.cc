@@ -17,7 +17,7 @@ using namespace std;
 
 void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_requests,
                      const std::function<void( const storage::PutRequest & )> & success_callback) {
-  const size_t thread_count = config_.max_threads;
+  const size_t thread_count = 1;
   const size_t batch_size = config_.max_batch_size;
   vector<thread> threads;
   for ( size_t thread_index = 0; thread_index < thread_count; thread_index++ ) {
@@ -46,27 +46,45 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
               const string & filename = upload_requests.at( file_id ).filename.string();
               const string & object_key = upload_requests.at( file_id ).object_key;
 
-              string contents;
-              FileDescriptor file { CheckSystemCall( "open " + filename, open( filename.c_str(), O_RDONLY ) ) };
-              while ( not file.eof() ) { contents.append( file.read() ); }
-              file.close();
-
-              // create file on crail
-              auto crailFile = crailStore->Create<CrailFile>(const_cast<std::string&>(object_key), 0, 0, true).get();
-              if ( !crailFile.valid() ) {
-                throw runtime_error( "failed to create crailFile" );
+              FILE *fp = fopen(filename.c_str(), "r");
+              if (!fp) {
+                cout << "could not open local file " << filename.c_str() << endl;
+                return -1;
               }
 
-              // write file to crail stream
-              unique_ptr<CrailOutputstream> outputstream = crailFile.outputstream();
-              std::shared_ptr<ByteBuffer> buf = make_shared<ByteBuffer>(contents.length());
-              buf->PutBytes(contents.c_str(), contents.length());
-              buf->Flip();
-              while (buf->remaining() > 0) {
-                if (outputstream->Write(buf).get() < 0) {
-                  throw runtime_error( "failed to write to crailFile outputStream" );
+              auto file = crailStore->Create<CrailFile>(const_cast<std::string&>(object_key), 0, 0, 1).get();
+              if (!file.valid()) {
+                cout << "create node failed" << endl;
+                return -1;
+              }
+
+              unique_ptr<CrailOutputstream> outputstream = file.outputstream();
+
+              shared_ptr<ByteBuffer> buf = make_shared<ByteBuffer>(kBufferSize);
+              while (size_t len = fread(buf->get_bytes(), 1, buf->remaining(), fp)) {
+                buf->set_position(buf->position() + len);
+                if (buf->remaining() > 0) {
+                  continue;
+                }
+
+                buf->Flip();
+                while (buf->remaining() > 0) {
+                  if (outputstream->Write(buf).get() < 0) {
+                    return -1;
+                  }
+                }
+                buf->Clear();
+              }
+
+              if (buf->position() > 0) {
+                buf->Flip();
+                while (buf->remaining() > 0) {
+                  if (outputstream->Write(buf).get() < 0) {
+                    return -1;
+                  }
                 }
               }
+              fclose(fp);
               outputstream->Close().get();
 
               success_callback( upload_requests[ file_id ] );
@@ -86,7 +104,7 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
 
 void CrailClient::download_files(const std::vector<storage::GetRequest> & download_requests,
                        const std::function<void( const storage::GetRequest & )> & success_callback) {
-  const size_t thread_count = config_.max_threads;
+  const size_t thread_count = 1;
   const size_t batch_size = config_.max_batch_size;
 
   vector<thread> threads;
@@ -114,36 +132,39 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
             for ( size_t file_id = first_file_idx;
                   file_id < min( download_requests.size(), first_file_idx + thread_count * batch_size );
                   file_id += thread_count ) {
+              const string & filename = download_requests.at( file_id ).filename.string();
               const string & object_key = download_requests.at( file_id ).object_key;
 
-              // get file on crail
-              auto crailFile = crailStore->Lookup<CrailFile>(const_cast<std::string&>(object_key)).get();
-              if ( !crailFile.valid() ) {
-                throw runtime_error( "faild to get crailFile" );
+              CrailFile file = crailStore->Lookup<CrailFile>(const_cast<std::string&>(object_key)).get();
+              if (!file.valid()) {
+                cout << "lookup node failed" << endl;
+                return -1;
               }
 
-              //read data to str_data
-              unique_ptr<CrailInputstream> inputstream = crailFile.inputstream();
+              FILE *fp = fopen(filename.c_str(), "w");
+              if (!fp) {
+                cout << "could not open local file " << filename.c_str() << endl;
+                return -1;
+              }
+
+              unique_ptr<CrailInputstream> inputstream = file.inputstream();
+
               shared_ptr<ByteBuffer> buf = make_shared<ByteBuffer>(kBufferSize);
-              while (buf->remaining()) {
-                if (inputstream->Read(buf).get() < 0) {
-                  return -1;
+              while (inputstream->Read(buf).get() > 0) {
+                buf->Flip();
+                while (buf->remaining()) {
+                  if (size_t len = fwrite(buf->get_bytes(), 1, buf->remaining(), fp)) {
+                    buf->set_position(buf->position() + len);
+                  } else {
+                    break;
+                  }
                 }
+                buf->Clear();
               }
-              buf->Clear();
-              inputstream->Close().get();
-
-              str_data.append(reinterpret_cast<const char*>(buf->get_bytes()));
-
-              // process create file from string
-              const string & filename = download_requests.at( file_id ).filename.string();
-
-              roost::atomic_create( str_data, filename,
-                                   download_requests[ file_id ].mode.initialized(),
-                                   download_requests[ file_id ].mode.get_or( 0 ) );
+              fclose(fp);
+              inputstream->Close();
 
               success_callback( download_requests[ file_id ] );
-
               expected_responses++;
             }
           }
