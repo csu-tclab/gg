@@ -67,7 +67,7 @@ int NarpcStaging::Flush(int socket) {
   unsigned char *buf = metadata_.get_bytes();
   int size = metadata_.remaining();
 
-  cout << "Flushing size " << size << endl;
+  //cout << "Flushing size " << size << endl;
 
   /*
 SendBytes(socket, buf, size);
@@ -99,9 +99,9 @@ int NarpcStaging::SendBytesV(int socket, struct iovec *iov, int vec_count) {
 }
 
 int NarpcStaging::SendBytes(int socket, unsigned char *buf, int size) {
-  cout << "sending buf of size " << size << endl;
+  //cout << "sending buf of size " << size << endl;
   int res = send(socket, buf, (size_t)size, (int)0);
-  cout << "res " << res << endl;
+  //cout << "res " << res << endl;
   if (res < 0) {
     return res;
   }
