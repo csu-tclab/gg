@@ -29,9 +29,9 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
           std::shared_ptr<CrailStore> crailStore;
           crailStore.reset(new CrailStore(config_.namenode_address, config_.port));
 
-          std::cout << "[INFO] [upload_files] thread index[" << thread_index << "]" << "begin connect to crail" << std::endl;
+          std::cout << "\n[INFO] [upload_files] thread index [" << thread_index << "] " << "begin connect to crail";
           crailStore->Initialize();
-          std::cout << "[INFO] [upload_files] thread index[" << thread_index << "]" << "connect to crail server end" << std::endl;
+          std::cout << "\n[INFO] [upload_files] thread index [" << thread_index << "] " << "connect to crail server end";
           // we can't check the connect result
 
           for ( size_t first_file_idx = index;
@@ -45,6 +45,8 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
                   file_id += thread_count ) {
               const string & filename = upload_requests.at( file_id ).filename.string();
               const string & object_key = upload_requests.at( file_id ).object_key;
+
+              cout << "\n[NOTICE] [upload_files] filename: " << filename;
 
               FILE *fp = fopen(filename.c_str(), "r");
               if (!fp) {
@@ -117,9 +119,9 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
           std::shared_ptr<CrailStore> crailStore;
           crailStore.reset(new CrailStore(config_.namenode_address, config_.port));
 
-          std::cout << "[INFO] [download_files] thread index[" << thread_index << "]" << "begin connect to crail" << std::endl;
+          std::cout << "\n[INFO] [download_files] thread index [" << thread_index << "] " << "begin connect to crail";
           crailStore->Initialize();
-          std::cout << "[INFO] [download_files] thread index[" << thread_index << "]" << "connect to crail server end" << std::endl;
+          std::cout << "\n[INFO] [download_files] thread index [" << thread_index << "] " << "connect to crail server end";
           // we can't check the connect result
           
           for ( size_t first_file_idx = index;
@@ -140,6 +142,8 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
                 cout << "lookup node failed" << endl;
                 return -1;
               }
+
+              cout << "\n[NOTICE] [download_files] filename: " << filename;
 
               FILE *fp = fopen(filename.c_str(), "w");
               if (!fp) {
