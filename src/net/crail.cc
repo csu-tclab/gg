@@ -29,9 +29,9 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
           std::shared_ptr<CrailStore> crailStore;
           crailStore.reset(new CrailStore(config_.namenode_address, config_.port));
 
-          std::cout << "\n[INFO] [upload_files] thread index [" << thread_index << "] " << "begin connect to crail";
+          std::cout << endl << "[INFO] [upload_files] thread index [" << thread_index << "] " << "begin connect to crail" << endl;
           crailStore->Initialize();
-          std::cout << "\n[INFO] [upload_files] thread index [" << thread_index << "] " << "connect to crail server end";
+          std::cout << "[INFO] [upload_files] thread index [" << thread_index << "] " << "connect to crail server end" << endl;
           // we can't check the connect result
 
           for ( size_t first_file_idx = index;
@@ -44,9 +44,7 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
                   file_id < min( upload_requests.size(), first_file_idx + thread_count * batch_size );
                   file_id += thread_count ) {
               const string & filename = upload_requests.at( file_id ).filename.string();
-              const string & object_key = upload_requests.at( file_id ).object_key;
-
-              cout << "\n[NOTICE] [upload_files] filename: " << filename;
+              const string & object_key = "/" + upload_requests.at( file_id ).object_key;
 
               FILE *fp = fopen(filename.c_str(), "r");
               if (!fp) {
@@ -60,6 +58,8 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
                 return -1;
               }
 
+              cout << "[NOTICE] [upload_files] filename: " << filename << endl << "object key: "<<object_key << endl;
+              
               unique_ptr<CrailOutputstream> outputstream = file.outputstream();
 
               shared_ptr<ByteBuffer> buf = make_shared<ByteBuffer>(kBufferSize);
@@ -119,9 +119,9 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
           std::shared_ptr<CrailStore> crailStore;
           crailStore.reset(new CrailStore(config_.namenode_address, config_.port));
 
-          std::cout << "\n[INFO] [download_files] thread index [" << thread_index << "] " << "begin connect to crail";
+          std::cout << endl << "[INFO] [download_files] thread index [" << thread_index << "] " << "begin connect to crail" << endl;
           crailStore->Initialize();
-          std::cout << "\n[INFO] [download_files] thread index [" << thread_index << "] " << "connect to crail server end";
+          std::cout << "[INFO] [download_files] thread index [" << thread_index << "] " << "connect to crail server end" << endl;
           // we can't check the connect result
           
           for ( size_t first_file_idx = index;
@@ -135,7 +135,7 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
                   file_id < min( download_requests.size(), first_file_idx + thread_count * batch_size );
                   file_id += thread_count ) {
               const string & filename = download_requests.at( file_id ).filename.string();
-              const string & object_key = download_requests.at( file_id ).object_key;
+              const string & object_key = "/" + download_requests.at( file_id ).object_key;
 
               CrailFile file = crailStore->Lookup<CrailFile>(const_cast<std::string&>(object_key)).get();
               if (!file.valid()) {
@@ -143,13 +143,13 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
                 return -1;
               }
 
-              cout << "\n[NOTICE] [download_files] filename: " << filename;
-
               FILE *fp = fopen(filename.c_str(), "w");
               if (!fp) {
                 cout << "could not open local file " << filename.c_str() << endl;
                 return -1;
               }
+
+              cout << "[NOTICE] [download_files] filename: " << filename << endl << "object key: "<<object_key << endl;
 
               unique_ptr<CrailInputstream> inputstream = file.inputstream();
 
