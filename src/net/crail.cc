@@ -29,16 +29,15 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
           std::shared_ptr<CrailStore> crailStore;
           crailStore.reset(new CrailStore(config_.namenode_address, config_.port));
 
-          std::cout << endl << "[INFO] [upload_files] thread index [" << thread_index << "] " << "begin connect to crail" << endl;
+          printf("\n");
+          printf("[INFO] [upload_files] thread index [%d] begin connect to crail\n", thread_index);
           crailStore->Initialize();
-          std::cout << "[INFO] [upload_files] thread index [" << thread_index << "] " << "connect to crail server end" << endl;
+          printf("[INFO] [upload_files] thread index [%d] connect to crail server end\n", thread_index);
           // we can't check the connect result
 
           for ( size_t first_file_idx = index;
                 first_file_idx < upload_requests.size();
                 first_file_idx += thread_count * batch_size ) {
-
-            size_t expected_responses = 0;
 
             for ( size_t file_id = first_file_idx;
                   file_id < min( upload_requests.size(), first_file_idx + thread_count * batch_size );
@@ -48,17 +47,17 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
 
               FILE *fp = fopen(filename.c_str(), "r");
               if (!fp) {
-                cout << "could not open local file " << filename.c_str() << endl;
+                printf("could not open local file: [%s]\n", filename.c_str());
                 return -1;
               }
 
               auto file = crailStore->Create<CrailFile>(const_cast<std::string&>(object_key), 0, 0, 1).get();
               if (!file.valid()) {
-                cout << "create node failed" << endl;
+                printf("create node failed\n");
                 return -1;
               }
 
-              cout << "[NOTICE] [upload_files] filename: " << filename << endl << "object key: "<<object_key << endl;
+              printf("[NOTICE] [upload_files] filename: [%s] object_key: [%s]\n", filename.c_str(), object_key.c_str());
               
               unique_ptr<CrailOutputstream> outputstream = file.outputstream();
 
@@ -90,7 +89,6 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
               outputstream->Close().get();
 
               success_callback( upload_requests[ file_id ] );
-              expected_responses++;
             }
           }
         }, thread_index
@@ -119,17 +117,14 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
           std::shared_ptr<CrailStore> crailStore;
           crailStore.reset(new CrailStore(config_.namenode_address, config_.port));
 
-          std::cout << endl << "[INFO] [download_files] thread index [" << thread_index << "] " << "begin connect to crail" << endl;
+          printf("[INFO] [download_files] thread index [%d] begin connect to crail\n", thread_index);
           crailStore->Initialize();
-          std::cout << "[INFO] [download_files] thread index [" << thread_index << "] " << "connect to crail server end" << endl;
+          printf("[INFO] [download_files] thread index [%d] connect to crail end\n", thread_index);
           // we can't check the connect result
           
           for ( size_t first_file_idx = index;
                 first_file_idx < download_requests.size();
                 first_file_idx += thread_count * batch_size ) {
-
-            string str_data="";
-            size_t expected_responses = 0;
 
             for ( size_t file_id = first_file_idx;
                   file_id < min( download_requests.size(), first_file_idx + thread_count * batch_size );
@@ -139,37 +134,32 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
 
               CrailFile file = crailStore->Lookup<CrailFile>(const_cast<std::string&>(object_key)).get();
               if (!file.valid()) {
-                cout << "lookup node failed" << endl;
+                printf("lookup node failed\n");
                 return -1;
               }
 
-              FILE *fp = fopen(filename.c_str(), "w");
-              if (!fp) {
-                cout << "could not open local file " << filename.c_str() << endl;
-                return -1;
-              }
-
-              cout << "[NOTICE] [download_files] filename: " << filename << endl << "object key: "<<object_key << endl;
+              printf("[NOTICE] [download_files] filename: [%s], object_key: [%s]\n", filename.c_str(), object_key.c_str());
 
               unique_ptr<CrailInputstream> inputstream = file.inputstream();
+              string str_data;
 
               shared_ptr<ByteBuffer> buf = make_shared<ByteBuffer>(kBufferSize);
+
               while (inputstream->Read(buf).get() > 0) {
                 buf->Flip();
                 while (buf->remaining()) {
-                  if (size_t len = fwrite(buf->get_bytes(), 1, buf->remaining(), fp)) {
-                    buf->set_position(buf->position() + len);
-                  } else {
-                    break;
-                  }
+                  str_data.append(reinterpret_cast<const char*>(buf->get_bytes()), buf->remaining());
                 }
                 buf->Clear();
               }
-              fclose(fp);
+              
               inputstream->Close();
 
+              roost::atomic_create( str_data, filename,
+                                    download_requests[ file_id ].mode.initialized(),
+                                    download_requests[ file_id ].mode.get_or( 0 ) );
+
               success_callback( download_requests[ file_id ] );
-              expected_responses++;
             }
           }
         }, thread_index
