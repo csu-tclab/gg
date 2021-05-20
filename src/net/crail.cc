@@ -147,9 +147,9 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
 
               while (inputstream->Read(buf).get() > 0) {
                 buf->Flip();
-                while (buf->remaining()) {
-                  str_data.append(reinterpret_cast<const char*>(buf->get_bytes()), buf->remaining());
-                }
+
+                str_data.append(reinterpret_cast<const char*>(buf->get_bytes()), buf->remaining());
+                
                 buf->Clear();
               }
               
