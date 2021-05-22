@@ -30,9 +30,9 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
           crailStore.reset(new CrailStore(config_.namenode_address, config_.port));
 
           printf("\n");
-          printf("[INFO] [upload_files] thread index [%d] begin connect to crail\n", thread_index);
+          printf("->[INFO] [upload_files] thread index [%d] begin connect to crail\n", thread_index);
           crailStore->Initialize();
-          printf("[INFO] [upload_files] thread index [%d] connect to crail server end\n", thread_index);
+          printf("->[INFO] [upload_files] thread index [%d] connect to crail server end\n", thread_index);
           // we can't check the connect result
 
           for ( size_t first_file_idx = index;
@@ -43,21 +43,34 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
                   file_id < min( upload_requests.size(), first_file_idx + thread_count * batch_size );
                   file_id += thread_count ) {
               const string & filename = upload_requests.at( file_id ).filename.string();
-              const string & object_key = "/" + upload_requests.at( file_id ).object_key;
+              string object_key = "/" + upload_requests.at( file_id ).object_key;
 
               FILE *fp = fopen(filename.c_str(), "r");
               if (!fp) {
-                printf("could not open local file: [%s]\n", filename.c_str());
+                printf("[ERROR] could not open local file: [%s]\n", filename.c_str());
                 return -1;
+              }
+
+              // check if dumplicated
+              auto existCheck = crailStore->Lookup<CrailFile>(object_key).get();
+              if (existCheck.valid()) {
+                printf("[NOTICE] found dumplicated key, will remove!");
+
+                // remove existed key
+                auto result = crailStore->Remove(object_key, true);
+                if (result != 0) {
+                  printf("[ERROR] remove existed key failed!");
+                  continue;
+                }
               }
 
               auto file = crailStore->Create<CrailFile>(const_cast<std::string&>(object_key), 0, 0, 1).get();
               if (!file.valid()) {
-                printf("create node failed\n");
+                printf("[ERROR] create node failed\n");
                 return -1;
               }
 
-              printf("[NOTICE] [upload_files] filename: [%s] object_key: [%s]\n", filename.c_str(), object_key.c_str());
+              printf("->[NOTICE] [upload_files] filename: [%s] object_key: [%s]\n", filename.c_str(), object_key.c_str());
               
               unique_ptr<CrailOutputstream> outputstream = file.outputstream();
 
@@ -117,9 +130,9 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
           std::shared_ptr<CrailStore> crailStore;
           crailStore.reset(new CrailStore(config_.namenode_address, config_.port));
 
-          printf("[INFO] [download_files] thread index [%d] begin connect to crail\n", thread_index);
+          printf("<-[INFO] [download_files] thread index [%d] begin connect to crail\n", thread_index);
           crailStore->Initialize();
-          printf("[INFO] [download_files] thread index [%d] connect to crail end\n", thread_index);
+          printf("<-[INFO] [download_files] thread index [%d] connect to crail end\n", thread_index);
           // we can't check the connect result
           
           for ( size_t first_file_idx = index;
@@ -134,14 +147,14 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
 
               CrailFile file = crailStore->Lookup<CrailFile>(const_cast<std::string&>(object_key)).get();
               if (!file.valid()) {
-                printf("lookup node failed\n");
+                printf("[ERROR] lookup node failed\n");
                 return -1;
               }
 
-              printf("[NOTICE] [download_files] filename: [%s], object_key: [%s]\n", filename.c_str(), object_key.c_str());
+              printf("<-[NOTICE] [download_files] filename: [%s], object_key: [%s]\n", filename.c_str(), object_key.c_str());
 
               unique_ptr<CrailInputstream> inputstream = file.inputstream();
-              string str_data;
+              string str_data = "";
 
               shared_ptr<ByteBuffer> buf = make_shared<ByteBuffer>(kBufferSize);
 
