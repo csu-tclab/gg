@@ -70,7 +70,7 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
                 return -1;
               }
 
-              printf("->[NOTICE] [upload_files] filename: [%s] object_key: [%s]\n", filename.c_str(), object_key.c_str());
+              printf("->[NOTICE] [upload_files] host: [%s] filename: [%s] object_key: [%s]\n",this->hostname, filename.c_str(), object_key.c_str());
               
               unique_ptr<CrailOutputstream> outputstream = file.outputstream();
 
@@ -151,7 +151,7 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
                 return -1;
               }
 
-              printf("<-[NOTICE] [download_files] filename: [%s], object_key: [%s]\n", filename.c_str(), object_key.c_str());
+              printf("<-[NOTICE] [download_files] host: [%s] filename: [%s], object_key: [%s]\n",this->hostname, filename.c_str(), object_key.c_str());
 
               unique_ptr<CrailInputstream> inputstream = file.inputstream();
               string str_data = "";

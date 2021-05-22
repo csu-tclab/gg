@@ -7,6 +7,8 @@
 #include <string>
 #include <functional>
 
+#include <unistd.h>
+
 #include "net/requests.hh"
 
 #include "third_party/crailnative/crail/client/crail_file.h"
@@ -25,9 +27,12 @@ class CrailClient
 {
 public:
   CrailClientConfig config_;
+  char hostname[64];
 
 public:
-  CrailClient( const CrailClientConfig & config ) : config_(config) {} ;
+  CrailClient( const CrailClientConfig & config ) : config_(config) {
+    gethostname(hostname, sizeof(hostname));
+  } ;
 
   void upload_files( const std::vector<storage::PutRequest> & upload_requests,
                      const std::function<void( const storage::PutRequest & )> & success_callback
