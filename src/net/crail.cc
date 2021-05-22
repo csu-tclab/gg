@@ -47,26 +47,26 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
 
               FILE *fp = fopen(filename.c_str(), "r");
               if (!fp) {
-                printf("[ERROR] could not open local file: [%s]\n", filename.c_str());
+                fprintf(stderr, "[ERROR] could not open local file: [%s]\n", filename.c_str());
                 return -1;
               }
 
               // check if dumplicated
               auto existCheck = crailStore->Lookup<CrailFile>(object_key).get();
               if (existCheck.valid()) {
-                printf("[NOTICE] found dumplicated key, will remove!");
+                fprintf(stderr, "[NOTICE] found dumplicated key, will remove!\n");
 
                 // remove existed key
                 auto result = crailStore->Remove(object_key, true);
                 if (result != 0) {
-                  printf("[ERROR] remove existed key failed!");
+                  fprintf(stderr, "[ERROR] remove existed key FAILED!\n");
                   continue;
                 }
               }
 
               auto file = crailStore->Create<CrailFile>(const_cast<std::string&>(object_key), 0, 0, 1).get();
               if (!file.valid()) {
-                printf("[ERROR] create node failed\n");
+                fprintf(stderr, "[ERROR] create node failed\n");
                 return -1;
               }
 
@@ -147,7 +147,7 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
 
               CrailFile file = crailStore->Lookup<CrailFile>(const_cast<std::string&>(object_key)).get();
               if (!file.valid()) {
-                printf("[ERROR] lookup node failed\n");
+                fprintf(stderr, "[ERROR] lookup node failed\n");
                 return -1;
               }
 
