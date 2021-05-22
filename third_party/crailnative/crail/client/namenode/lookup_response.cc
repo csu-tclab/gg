@@ -37,4 +37,6 @@ int LookupResponse::Update(ByteBuffer &buffer) {
 
   file_info_.Update(buffer);
   block_info_->Update(buffer);
+
+  return 0;
 }

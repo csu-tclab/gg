@@ -38,4 +38,6 @@ int RemoveRequest::Write(ByteBuffer &buffer) {
   filename_.Write(buffer);
   int recursive = this->recursive_ ? 1 : 0;
   buffer.PutInt(recursive);
+
+  return 0;
 }
