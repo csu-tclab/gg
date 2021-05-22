@@ -60,7 +60,7 @@ public:
     return *this;
   }
 
-  bool valid() const { return file_info_.fd() >= 0; }
+  bool valid() const { return (long long)file_info_.fd() >= 0; }
   int type() const { return file_info_.type(); }
   unsigned long long fd() const { return file_info_.fd(); }
   unsigned long long capacity() const { return file_info_.capacity(); }
