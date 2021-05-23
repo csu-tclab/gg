@@ -177,7 +177,7 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
               string str_data = "";
 
               // lookup and download files
-              printf("[INFO] [download_files] <-- HOST: [%s], object_key: [%s] END\n",this->hostname, object_key.c_str());
+              printf("[INFO] [download_files] <-- HOST: [%s], object_key: [%s] BEGIN\n",this->hostname, object_key.c_str());
               CrailFile file = crailStore->Lookup<CrailFile>(const_cast<std::string&>(object_key)).get();
               if (!file.valid()) {
                 fprintf(stderr, "[ERROR] lookup node FAILED\n");
