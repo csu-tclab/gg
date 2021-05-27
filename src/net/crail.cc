@@ -22,6 +22,9 @@ void CrailClient::upload_files( const std::vector<storage::PutRequest> & upload_
   const size_t thread_count = 1;
   const size_t batch_size = config_.max_batch_size;
   vector<thread> threads;
+
+  fprintf(stdout, "size of upload_requests is [%d]\n", upload_requests.size());
+  
   for ( size_t thread_index = 0; thread_index < thread_count; thread_index++ ) {
     if ( thread_index < upload_requests.size() ) {
       threads.emplace_back(
@@ -142,6 +145,8 @@ void CrailClient::download_files(const std::vector<storage::GetRequest> & downlo
                        const std::function<void( const storage::GetRequest & )> & success_callback) {
   const size_t thread_count = 1;
   const size_t batch_size = config_.max_batch_size;
+
+  fprintf(stdout, "size of download_requests is [%d]\n", download_requests.size());
 
   vector<thread> threads;
   for ( size_t thread_index = 0; thread_index < thread_count; thread_index++ ) {
