@@ -10,6 +10,7 @@
 #include "storage/backend_s3.hh"
 #include "storage/backend_gs.hh"
 #include "storage/backend_redis.hh"
+#include "storage/backend_memcached.hh"
 #include "thunk/ggutils.hh"
 #include "util/digest.hh"
 #include "util/optional.hh"
@@ -59,6 +60,15 @@ unique_ptr<StorageBackend> StorageBackend::create_backend( const string & uri )
     config.password = endpoint.password;
 
     backend = make_unique<RedisStorageBackend>( config );
+  }
+  else if ( endpoint.protocol == "memcached" ) {
+    MemcachedClientConfig config;
+    config.ip = endpoint.host;
+    config.port = endpoint.port.get_or( config.port );
+    config.username = endpoint.username;
+    config.password = endpoint.password;
+
+    backend = make_unique<MemcachedStorageBackend>( config );
   }
   else {
     throw runtime_error( "unknown storage backend" );

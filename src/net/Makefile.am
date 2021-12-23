@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I$(srcdir)/. -I$(srcdir)/.. $(CXX14_FLAGS) $(SSL_CFLAGS) $(HIREDIS_CFLAGS)
+AM_CPPFLAGS = -I$(srcdir)/. -I$(srcdir)/.. $(CXX14_FLAGS) $(SSL_CFLAGS) $(HIREDIS_CFLAGS) $(LIBMEMCACHED_CFLAGS)
 AM_CXXFLAGS = $(PICKY_CXXFLAGS) $(EXTRA_CXXFLAGS)
 
 noinst_LIBRARIES = libggnet.a
@@ -20,4 +20,5 @@ libggnet_a_SOURCES = address.cc address.hh body_parser.hh \
                      s3.hh s3.cc \
                      lambda.hh lambda.cc \
                      redis.hh redis.cc \
-                     gcloud.hh gcloud.cc
+                     gcloud.hh gcloud.cc \
+                     memcached.hh memcached.cc

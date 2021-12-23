@@ -15,7 +15,7 @@ AC_PROG_RANLIB
 
 # Add picky CXXFLAGS
 CXX14_FLAGS="-std=c++14 -pthread"
-PICKY_CXXFLAGS="-pedantic -Wall -Wextra -Weffc++ -Werror"
+PICKY_CXXFLAGS="-pedantic -Wno-unused-parameter -Wall -Wextra -Weffc++ -Werror"
 AC_SUBST([CXX14_FLAGS])
 AC_SUBST([PICKY_CXXFLAGS])
 AC_LANG_PUSH(C++)
