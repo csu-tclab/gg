@@ -113,6 +113,7 @@ MemcachedClient::MemcachedClient(MemcachedClientConfig &config)  : _mem_connect(
     this->_addr = config.ip;
     this->_port = config.port;
 
+    log_info("ADDR -> [%s], PORT -> [%d]", this->_addr.c_str(), this->_port);
     // no auth for now
 }
 
@@ -137,11 +138,11 @@ int MemcachedClient::Connect() {
     memcached_return mem_ret;
     memcached_server_st *mem_server = nullptr;
 
-    log_debug("Connect begin");
+    log_debug("Connect to [%s]:[%d] begin", this->_addr.c_str(), this->_port);
     // invoke connect
     mem_server = memcached_server_list_append(mem_server, this->_addr.c_str(), this->_port, &mem_ret);
     mem_ret = memcached_server_push(this->_mem_connect, mem_server); 
-    log_debug("Connect end");
+    log_debug("Connect to [%s]:[%d] end", this->_addr.c_str(), this->_port);
     // check result
     if (mem_ret != MEMCACHED_SUCCESS) {
         cout << "memcached_server_push failed! rc -> " << mem_ret << endl;
@@ -156,7 +157,7 @@ int MemcachedClient::Connect() {
 int MemcachedClient::Disconnect() {
     // invoke disconnect
     if (this->_mem_connect != nullptr) {
-        log_debug("Disconnect begin");
+        log_debug("Disconnect from [%s]:[%d] begin", this->_addr.c_str(), this->_port);
         memcached_free(this->_mem_connect);
         this->_mem_connect = nullptr;
         log_debug("Disconnect end");
