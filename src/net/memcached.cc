@@ -55,10 +55,11 @@ int MemcachedClient::Connect() {
     memcached_return mem_ret;
     memcached_server_st *mem_server = nullptr;
 
+    log_debug("Connect begin");
     // invoke connect
     mem_server = memcached_server_list_append(mem_server, this->_addr.c_str(), this->_port, &mem_ret);
     mem_ret = memcached_server_push(this->_mem_connect, mem_server); 
-
+    log_debug("Connect end");
     // check result
     if (mem_ret != MEMCACHED_SUCCESS) {
         cout << "memcached_server_push failed! rc -> " << mem_ret << endl;
@@ -73,8 +74,10 @@ int MemcachedClient::Connect() {
 int MemcachedClient::Disconnect() {
     // invoke disconnect
     if (this->_mem_connect != nullptr) {
+        log_debug("Disconnect begin");
         memcached_free(this->_mem_connect);
         this->_mem_connect = nullptr;
+        log_debug("Disconnect end");
     }
 
     return 0;
@@ -88,6 +91,8 @@ int MemcachedClient::Set(const std::string key, const std::string &value) {
 
     assert(this->_mem_connect != nullptr);
 
+    log_debug("Set begin");
+
     mem_ret = memcached_set(this->_mem_connect, key.c_str(), key.length(), value.c_str(), value.length(), expireation, flags);
 
     if (mem_ret != MEMCACHED_SUCCESS)
@@ -95,6 +100,8 @@ int MemcachedClient::Set(const std::string key, const std::string &value) {
         cout << "set key -> " << key << " failed" << endl;
         ret = -1;
     }
+
+    log_debug("Set end");
 
     return ret;
 }
@@ -107,6 +114,8 @@ int MemcachedClient::Get(const std::string key, std::string &value) {
 
     assert(this->_mem_connect != nullptr);
 
+    log_debug("Get begin");
+
     char* val = memcached_get(this->_mem_connect, key.c_str(), key.length(), &value_length, &flags, &mem_ret);
 
     if(mem_ret == MEMCACHED_SUCCESS)
@@ -116,6 +125,8 @@ int MemcachedClient::Get(const std::string key, std::string &value) {
     } else {
         ret = -1;
     }
+
+    log_debug("Get end");
 
     return ret;
 }
