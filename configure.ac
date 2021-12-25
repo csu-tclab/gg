@@ -36,6 +36,7 @@ PKG_CHECK_MODULES([SSL],[libssl libcrypto])
 PKG_CHECK_MODULES([PROTOBUF], [protobuf])
 PKG_CHECK_MODULES([HIREDIS], [hiredis])
 PKG_CHECK_MODULES([MEMCACHED], [libmemcached])
+PKG_CHECK_MODULES([CRAIL], [libcrail])
 
 AX_BOOST_BASE([1.54.0], [], [AC_MSG_ERROR([Missing boost (may need to install libboost-dev)])])
 
