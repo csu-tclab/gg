@@ -53,14 +53,14 @@ sudo apt-get install gcc-7 g++-7 protobuf-compiler libprotobuf-dev \
                      libhiredis-dev texinfo automake libtool pkg-config python3-boto3
 ```
 
-To build this branch, you must compile libmemcached as a static library(.a) without sasl2 && install it.
+To build this branch, you must compile libmemcached && crailnative as a static library(.a) without sasl2 && install it.
 
 For ubuntu users, you must uninstall the libmemcached-dev from ubuntu soft repo:
 ```
 apt remove libmemcached-dev --purge
 ```
 
-Then build and install libmemcached as following instructions:
+Then build and install libmemcached with following instructions:
 
 ```
 cd third_party/libmemcached
@@ -68,6 +68,18 @@ tar -zxv -f libmemcached-1.0.18_fix.tar.gz
 cd libmemcached-1.0.18
 ./configure --enable-static --disable-shared --with-memcached --disable-sasl
 make && sudo make install
+```
+
+And build and install crailnative with following instructions:
+
+```
+cd third_party/crailnative
+tar -zxv -f crailnative.tar.gz
+cd crailnative
+mkdir build && cd build
+cmake ..
+make -j 8
+make install
 ```
 
 To build `gg`, run the following commands:
