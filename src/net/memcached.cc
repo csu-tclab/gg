@@ -48,12 +48,12 @@ void Memcached::upload_files(const vector<storage::PutRequest> &upload_requests,
         while ( not file.eof() ) { contents.append( file.read() ); }
         file.close();
 
-        log_debug("begin set key [%s] for file [%s]", object_key.c_str(), filename.c_str());
+        log_debug("begin set key [%s]", object_key.c_str());
         if (client.Set(object_key, contents) < 0) {
             log_error("failed to set key [%s] to memcached", object_key.c_str());
             throw runtime_error("failed to set key");
         }
-        log_debug("end set key [%s] for file [%s]", object_key.c_str(), filename.c_str());
+        log_debug("end set key [%s]", object_key.c_str());
 
         success_callback(upload_requests[i]);
 
@@ -108,13 +108,16 @@ void Memcached::download_files(const std::vector<storage::GetRequest> &download_
     log_debug("method download_files end");
 }
 
-MemcachedClient::MemcachedClient(MemcachedClientConfig &config)  : _mem_connect(nullptr), _addr(""), _port(0) {
+MemcachedClient::MemcachedClient(MemcachedClientConfig &config)  : _mem_connect(nullptr), _addr(""), _port(0), _connected(false) {
     // network info
     this->_addr = config.ip;
     this->_port = config.port;
 
     log_info("ADDR -> [%s], PORT -> [%d]", this->_addr.c_str(), this->_port);
     // no auth for now
+
+    // create memcached_st obj
+    this->_mem_connect = memcached_create(NULL);
 }
 
 MemcachedClient::~MemcachedClient() {
@@ -123,14 +126,15 @@ MemcachedClient::~MemcachedClient() {
     } catch(...) {
         // ignore exceptions
     }
+
+    memcached_free(this->_mem_connect);
 }
 
 int MemcachedClient::Connect() {
     int ret = 0;
 
-    // check if connected at first
-    if (this->_mem_connect != nullptr) {
-        cout << "already connected! operation abort" << endl;
+    if (this->_connected) {
+        log_debug("already connected! abort");
         return 0;
     }
 
@@ -160,6 +164,7 @@ int MemcachedClient::Disconnect() {
         log_debug("Disconnect from [%s]:[%d] begin", this->_addr.c_str(), this->_port);
         memcached_free(this->_mem_connect);
         this->_mem_connect = nullptr;
+        this->_connected = false;
         log_debug("Disconnect end");
     }
 
@@ -174,17 +179,13 @@ int MemcachedClient::Set(const std::string key, const std::string &value) {
 
     assert(this->_mem_connect != nullptr);
 
-    log_debug("Set begin");
-
     mem_ret = memcached_set(this->_mem_connect, key.c_str(), key.length(), value.c_str(), value.length(), expireation, flags);
 
     if (mem_ret != MEMCACHED_SUCCESS)
     {
-        cout << "set key -> " << key << " failed" << endl;
+        log_error("set key [%s] failed! ret -> [%d]", key.c_str(), mem_ret);
         ret = -1;
     }
-
-    log_debug("Set end");
 
     return ret;
 }
@@ -197,8 +198,6 @@ int MemcachedClient::Get(const std::string key, std::string &value) {
 
     assert(this->_mem_connect != nullptr);
 
-    log_debug("Get begin");
-
     char* val = memcached_get(this->_mem_connect, key.c_str(), key.length(), &value_length, &flags, &mem_ret);
 
     if(mem_ret == MEMCACHED_SUCCESS)
@@ -206,10 +205,9 @@ int MemcachedClient::Get(const std::string key, std::string &value) {
         value = std::string(val, value_length);
         ret = 0;
     } else {
+        log_error("get key [%s] failed! ret -> [%d]", key.c_str(), mem_ret);
         ret = -1;
     }
-
-    log_debug("Get end");
 
     return ret;
 }

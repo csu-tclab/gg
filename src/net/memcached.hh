@@ -65,6 +65,9 @@ private:
 
     // port
     uint16_t _port;
+
+    // 
+    bool _connected;
 };
 
 #endif /* NET_MEMCACHED_HH */
