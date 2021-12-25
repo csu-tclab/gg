@@ -10,6 +10,7 @@
 #include <libmemcached/memcached.hpp>
 
 #include "net/requests.hh"
+#include "util/log.hh"
 
 struct MemcachedClientConfig {
     std::string ip {"0.0.0.0"};

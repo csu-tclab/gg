@@ -14,13 +14,16 @@
 #include "util/optional.hh"
 
 using namespace std;
+using namespace logger;
 
 void Memcached::upload_files(const vector<storage::PutRequest> &upload_requests, const function<void( const storage::PutRequest & )> &success_callback) {
-
+    log_debug("upload_files begin");
+    log_debug("upload_files end");
 }
 
 void Memcached::download_files(const std::vector<storage::GetRequest> &download_requests, const std::function<void( const storage::GetRequest & )> &success_callback) {
-    
+    log_debug("download_files begin");
+    log_debug("download_files end");
 }
 
 MemcachedClient::MemcachedClient(MemcachedClientConfig &config)  : _mem_connect(nullptr), _addr(""), _port(0) {
