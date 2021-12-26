@@ -11,6 +11,7 @@
 #include "storage/backend_gs.hh"
 #include "storage/backend_redis.hh"
 #include "storage/backend_memcached.hh"
+#include "storage/backend_crail.hh"
 #include "thunk/ggutils.hh"
 #include "util/digest.hh"
 #include "util/optional.hh"
@@ -69,6 +70,15 @@ unique_ptr<StorageBackend> StorageBackend::create_backend( const string & uri )
     config.password = endpoint.password;
 
     backend = make_unique<MemcachedStorageBackend>( config );
+  }
+  else if ( endpoint.protocol == "crail" ) {
+    CrailClientConfig config;
+    config.ip = endpoint.host;
+    config.port = endpoint.port.get_or( config.port );
+    config.username = endpoint.username;
+    config.password = endpoint.password;
+
+    backend = make_unique<CrailStorageBackend>( config );
   }
   else {
     throw runtime_error( "unknown storage backend" );

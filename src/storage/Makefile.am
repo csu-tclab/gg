@@ -10,4 +10,5 @@ libggstorage_a_SOURCES = backend.hh backend.cc \
                          backend_s3.hh backend_s3.cc \
                          backend_redis.hh backend_redis.cc \
                          backend_gs.hh backend_gs.cc \
-                         backend_memcached.hh backend_memcached.cc
+                         backend_memcached.hh backend_memcached.cc \
+                         backend_crail.hh backend_crail.cc
