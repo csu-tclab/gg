@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstdarg>
 #include <ctime>
+#include <cstring>
 
 using std::string;
 
@@ -20,6 +21,8 @@ public:
 private:
     Logger();
     ~Logger();
+
+    bool _enable;
 };
 
 inline string va_list_to_string(const char *format, ...)
