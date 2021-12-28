@@ -8,6 +8,7 @@
 #include <getopt.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <chrono>
 
 #include "execution/reductor.hh"
 #include "net/s3.hh"
@@ -33,6 +34,7 @@
 
 using namespace std;
 using namespace gg::thunk;
+using namespace std::chrono;
 
 constexpr char FORCE_NO_STATUS[] = "GG_FORCE_NO_STATUS";
 constexpr char FORCE_DEFAULT_ENGINE[] = "GG_FORCE_DEFAULT_ENGINE";
@@ -314,6 +316,7 @@ int main( int argc, char * argv[] )
       storage_backend = StorageBackend::create_backend( gg::remote::storage_backend_uri() );
     }
 
+  chrono::high_resolution_clock::time_point begin = chrono::high_resolution_clock::now();
     Reductor reductor { target_hashes,
                         move( execution_engines ),
                         move( fallback_engines ),
@@ -322,7 +325,14 @@ int main( int argc, char * argv[] )
                         timeout_multiplier, status_bar };
 
     reductor.upload_dependencies();
+
+    chrono::high_resolution_clock::time_point begin1 = chrono::high_resolution_clock::now();
     vector<string> reduced_hashes = reductor.reduce();
+    chrono::high_resolution_clock::time_point end1 = chrono::high_resolution_clock::now();
+    auto complie_time = chrono::duration_cast<milliseconds>( end1 - begin1 );
+    
+    cerr << "Compile Finished in (" << complie_time.count() << " ms)." << endl;
+
     if ( not no_download and not reduced_hashes.empty() ) {
       reductor.download_targets( reduced_hashes );
 
@@ -333,6 +343,9 @@ int main( int argc, char * argv[] )
         roost::make_executable( actual_targets[ i ] );
       }
     }
+    chrono::high_resolution_clock::time_point end = chrono::high_resolution_clock::now();
+    auto allphase_time = chrono::duration_cast<milliseconds>( end - begin );
+    cerr << "Job Finished in (" << allphase_time.count() << " ms)." << endl;
 
     return EXIT_SUCCESS;
   }

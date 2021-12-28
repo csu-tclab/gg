@@ -107,7 +107,7 @@ Reductor::Reductor( const vector<string> & target_hashes,
       }
     } ).count();
 
-  cerr << " done (" << graph_load_time << " ms)." << endl;
+  cerr << "done (" << graph_load_time << " ms)." << endl;
 
   auto success_callback =
     [this] ( const string & old_hash, vector<ThunkOutput> && outputs, const float cost )
