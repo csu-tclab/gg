@@ -143,7 +143,7 @@ void Crail::upload_files(const vector<storage::PutRequest> & upload_requests, co
 
                     for (size_t file_id = first_file_idx; file_id < min(upload_requests.size(), first_file_idx + thread_count * batch_size); file_id += thread_count ) {
                         const string &filename = upload_requests.at(file_id).filename.string();
-                        const string &object_key = upload_requests.at(file_id).object_key;
+                        const string &object_key = "/gg/" + upload_requests.at(file_id).object_key;
 
                         string contents;
 
@@ -205,7 +205,7 @@ void Crail::download_files(const std::vector<storage::GetRequest> &download_requ
                 for (size_t first_file_idx = index; first_file_idx < download_requests.size(); first_file_idx += thread_count * batch_size) {
                     for (size_t file_id = first_file_idx; file_id < min(download_requests.size(), first_file_idx + thread_count * batch_size); file_id += thread_count) {
                         const string &filename = download_requests.at(file_id).filename.string();
-                        const string &object_key = download_requests.at(file_id).object_key;
+                        const string &object_key = "/gg/" + download_requests.at(file_id).object_key;
 
                         string str_data;
                         

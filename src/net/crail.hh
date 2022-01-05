@@ -18,7 +18,7 @@ struct CrailClientConfig {
     std::string username {};
     std::string password {};
 
-    size_t max_threads { 32 };
+    size_t max_threads { 4 };
     size_t max_batch_size { 32 };
 };
 
