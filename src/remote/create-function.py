@@ -10,6 +10,8 @@ import hashlib
 import base64
 import boto3
 
+import json
+
 BASE_FILE = {
     "lambda": "lambda_function/packages.zip",
     "meow": "meow_function/packages.zip"
@@ -74,6 +76,49 @@ def create_function_package(label, output, function_execs, gg_execute_static, gg
         for fn, fp in PACKAGE_FILES.items():
             funczip.write(fp, fn)
 
+def get_vpc_config(region):
+    client = boto3.client('ec2', region)
+    try:
+        # vpcs_dict = client.describe_vpcs()
+        # print(json.dumps(vpcs_dict, indent=4, sort_keys=True))
+
+        subnets_dict = client.describe_subnets()
+        # print(json.dumps(subnets_dict, indent=4, sort_keys=True))
+
+        sec_groups_dict = client.describe_security_groups()
+        # print(json.dumps(sec_groups_dict, indent=4, sort_keys=True))
+    except:
+        print("get_vpc_config with exception")
+        vpc_cfg_dict = {}
+        return vpc_cfg_dict
+
+    # vpc_ids = []
+    subnet_ids = []
+    sec_group_ids = []
+
+    #for Vpc in vpcs_dict["Vpcs"]:
+    #    VpcId = Vpc["VpcId"]
+    #    vpc_ids.append(VpcId)
+
+    for Subnet in subnets_dict["Subnets"]:
+        SubnetId = Subnet["SubnetId"]
+        subnet_ids.append(SubnetId)
+
+    for SecurityGroup in sec_groups_dict["SecurityGroups"]:
+        GroupId = SecurityGroup["GroupId"]
+        sec_group_ids.append(GroupId)
+
+
+    print("SubnetIds -> %s", subnet_ids)
+    print("SecurityGroups -> %s", sec_group_ids)
+
+    vpc_cfg_dict = {'SubnetIds' : subnet_ids, 'SecurityGroupIds' : sec_group_ids}
+    # print(json.dumps(vpc_cfg_dict, indent=4, sort_keys=True))
+    # vpc_cfg_str = json.dumps(vpc_cfg_dict, indent=4, sort_keys=True)
+    # print("vpc_cfg_str -> %s" % vpc_cfg_str)
+
+    return vpc_cfg_dict
+
 def install_lambda_package(package_file, function_name, role, region, delete=False):
     with open(package_file, 'rb') as pfin:
         package_data = pfin.read()
@@ -86,10 +131,13 @@ def install_lambda_package(package_file, function_name, role, region, delete=Fal
         except:
             pass
 
+    vpc_cfg_dict = get_vpc_config(region)
+
     response = client.create_function(
         FunctionName=function_name,
         Runtime='python3.6',
         Role=role,
+        VpcConfig=vpc_cfg_dict,
         Handler='main.handler',
         Code={
             'ZipFile': package_data
