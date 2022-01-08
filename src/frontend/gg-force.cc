@@ -9,6 +9,9 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <chrono>
+#include <cstdint>
+
+#include <crail/client/api/crail_client.h>
 
 #include "execution/reductor.hh"
 #include "net/s3.hh"
@@ -31,6 +34,7 @@
 #include "util/path.hh"
 #include "util/timeit.hh"
 #include "util/util.hh"
+#include "util/log.hh"
 
 using namespace std;
 using namespace gg::thunk;
@@ -149,6 +153,33 @@ unique_ptr<ExecutionEngine> make_execution_engine( const EngineInfo & engine )
   else {
     throw runtime_error( "unknown execution engine" );
   }
+}
+
+void init_crail_table(void) {
+  log_debug("init crail table begin");
+  log_debug("ip -> [%s]", StorageBackend::backend_ip_.c_str());
+
+  uint16_t port = uint16_t(atoi(StorageBackend::backend_port_.c_str()));
+  log_debug("port -> [%u]", port);
+
+  log_debug("construct CrailClient obj begin");
+  CrailClient client(StorageBackend::backend_ip_, port);
+  log_debug("construct CrailClient obj end");
+
+  log_debug("connect to crail server begin");
+  if (client.Connect() < 0) {
+      log_error("error connecting to crail server");
+      throw runtime_error("error connecting to crail server");
+  }
+  log_debug("connect to crail server end");
+
+  log_debug("InitCrailTable begin");
+  if (client.InitCrailTable() < 0) {
+    throw runtime_error("InitCrailTable failed!!");
+  }
+  log_debug("InitCrailTable end");
+
+  log_debug("init crail table end");
 }
 
 int main( int argc, char * argv[] )
@@ -314,6 +345,11 @@ int main( int argc, char * argv[] )
 
     if ( remote_execution ) {
       storage_backend = StorageBackend::create_backend( gg::remote::storage_backend_uri() );
+
+      // for crail backend, we need to init a table before set || get
+      if (StorageBackend::backend_type_ == "crail") {
+        init_crail_table();
+      }
     }
 
   chrono::high_resolution_clock::time_point begin = chrono::high_resolution_clock::now();

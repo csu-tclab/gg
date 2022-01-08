@@ -19,6 +19,11 @@
 
 using namespace std;
 
+// init static variables
+string StorageBackend::backend_type_ = "";
+string StorageBackend::backend_ip_ = "";
+string StorageBackend::backend_port_ = "";
+
 bool StorageBackend::is_available( const std::string & hash )
 {
   return roost::exists( remote_index_path_ / hash );
@@ -77,6 +82,10 @@ unique_ptr<StorageBackend> StorageBackend::create_backend( const string & uri )
     config.port = endpoint.port.get_or( config.port );
     config.username = endpoint.username;
     config.password = endpoint.password;
+
+    StorageBackend::backend_type_ = "crail";
+    StorageBackend::backend_ip_ = endpoint.host;
+    StorageBackend::backend_port_ = std::to_string(config.port);
 
     backend = make_unique<CrailStorageBackend>( config );
   }

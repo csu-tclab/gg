@@ -15,10 +15,17 @@
 typedef std::function<void( const storage::PutRequest & )> PutCallback;
 typedef std::function<void( const storage::GetRequest & )> GetCallback;
 
+using std::string;
+
 class StorageBackend
 {
 protected:
   roost::path remote_index_path_ {};
+
+public:
+  static string backend_type_;
+  static string backend_ip_;
+  static string backend_port_;
 
 public:
   virtual void put( const std::vector<storage::PutRequest> & requests,
