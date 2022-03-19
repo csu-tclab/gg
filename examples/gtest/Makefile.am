@@ -21,5 +21,5 @@ gtest_create_thunks_SOURCES = create-thunks.cc
 gtest_create_thunks_LDADD = $(BASE_LDADD) $(CRYPTO_LIBS)
 
 if BUILD_STATIC_BINS
-  gtest_wrapper_LDFLAGS += -static
+  gtest_wrapper_LDFLAGS += -static -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 endif

@@ -5,6 +5,8 @@
 #include <fstream>
 #include <cstdlib>
 
+#include <pthread.h>
+
 #include "thunk/thunk.hh"
 #include "thunk/thunk_writer.hh"
 #include "thunk/placeholder.hh"
@@ -20,6 +22,9 @@ int num_out = 25;
 
 int main( int argc, char * argv[] )
 {
+  pthread_t tid = pthread_self();
+  printf("tid: [%ld]\n", tid);
+
   try {
     if ( argc < 6 ) {
       cerr << "Usage: gen_vid_thunks <ffmpeg-hash> <listatic-hash> <.pb hash>";

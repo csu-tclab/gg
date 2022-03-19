@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include <pthread.h>
+
 #include "thunk/thunk.hh"
 #include "thunk/thunk_reader.hh"
 #include "util/exception.hh"
@@ -40,6 +42,9 @@ public:
 
 int main( int argc, char * argv [] )
 {
+  pthread_t tid = pthread_self();
+  printf("tid: [%ld]\n", tid);
+
   try {
     if ( argc <= 0 ) {
       abort();

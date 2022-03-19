@@ -22,6 +22,6 @@ gen_vid_thunks25_LDADD = $(BASE_LDADD)
 gen_vid_thunks25_LDFLAGS = -s
 
 if BUILD_STATIC_BINS
-  gen_vid_thunks_LDFLAGS += -static
-  gen_vid_thunks25_LDFLAGS += -static
+  gen_vid_thunks_LDFLAGS += -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+  gen_vid_thunks25_LDFLAGS += -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 endif
