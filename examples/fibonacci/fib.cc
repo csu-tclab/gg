@@ -11,22 +11,12 @@
 #include "util/path.hh"
 #include "util/util.hh"
 
-#include "storage/backend.hh"
-#include "thunk/ggutils.hh"
-
 using namespace std;
 using namespace gg;
 using namespace gg::thunk;
 
 int main( int argc, char * argv[] )
 {
-  try {
-    unique_ptr<StorageBackend> storage_backend;
-    storage_backend = StorageBackend::create_backend(gg::remote::storage_backend_uri());
-  } catch (...) {
-
-  }
-
   try {
     if ( argc != 2 ) {
       cerr << "usage: fib <N>" << endl;
