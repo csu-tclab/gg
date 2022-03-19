@@ -5,6 +5,8 @@
 #include <fstream>
 #include <cstdlib>
 
+#include <pthread.h>
+
 #include "thunk/thunk.hh"
 #include "thunk/thunk_writer.hh"
 #include "util/exception.hh"
@@ -17,6 +19,9 @@ using namespace gg::thunk;
 
 int main( int argc, char * argv[] )
 {
+  pthread_t tid = pthread_self();
+  printf("tid: [%ld]\n", tid);
+
   try {
     if ( argc != 2 ) {
       cerr << "usage: fib <N>" << endl;

@@ -23,6 +23,6 @@ add_SOURCES = add.cc
 add_LDFLAGS = -s
 
 if BUILD_STATIC_BINS
-  fib_LDFLAGS += -static
+  fib_LDFLAGS += -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
   add_LDFLAGS += -static
 endif
